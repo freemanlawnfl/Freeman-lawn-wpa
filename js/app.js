@@ -14,12 +14,10 @@ let deferredPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  // Show install button when prompt is available
   const installBtn = document.getElementById('installBtn');
   if (installBtn) installBtn.style.display = 'block';
 });
 
-// Install button click handler
 document.addEventListener('DOMContentLoaded', () => {
   const installBtn = document.getElementById('installBtn');
   if (installBtn) {
@@ -247,7 +245,7 @@ async function migratePin() {
 migratePin();
 
 /******************************
- * Custom PIN Modal (replaces prompt)
+ * Custom PIN Modal
  ******************************/
 function showPinModal(mode) {  // 'set' or 'change'
   const modal = document.getElementById('pinModal');
@@ -1138,14 +1136,159 @@ function renderBusinessProfile() {
 }
 
 /******************************
- * Placeholder for missing functions (add your original implementations here)
+ * Settings Meta
  ******************************/
 function renderSettingsMeta() {
-  // Your original renderSettingsMeta code here
-  document.getElementById('aboutMeta').textContent = `App Version: ${APP_VERSION} • Data stored locally`;
+  document.getElementById('aboutMeta').textContent = `App Version: ${APP_VERSION} • Data stored locally • Cape Coral, FL`;
 }
+
+/******************************
+ * Missing Functions – Bulk, Export, Wipe
+ ******************************/
+function bulkSmsUnpaid() {
+  const month = monthKeyFromInput();
+  const invoices = getInvoices().filter(i => i.month === month && !i.paid);
+  if (!invoices.length) {
+    toast('No unpaid invoices this month');
+    return;
+  }
+
+  const clients = getJSON('clients', []);
+  const listEl = document.getElementById('bulkPanelList');
+  listEl.innerHTML = '';
+
+  invoices.forEach(inv => {
+    const c = clients.find(x => x.id === inv.clientId);
+    if (!c || !c.phone) return;
+    const div = document.createElement('div');
+    div.innerHTML = `<strong>${c.name}</strong> – ${c.phone} <small>(\[ {inv.rate})</small>`;
+    listEl.appendChild(div);
+  });
+
+  document.getElementById('bulkPanelSubtitle').textContent = `Unpaid this month (${invoices.length} clients)`;
+  document.getElementById('bulkPanel').style.display = 'flex';
+}
+
+function bulkEmailUnpaid() {
+  bulkSmsUnpaid(); // Reuse list
+  document.getElementById('bulkPanelSubtitle').textContent += ' – ready to copy emails';
+}
+
+function closeBulkPanel() {
+  document.getElementById('bulkPanel').style.display = 'none';
+}
+
+function copyBulkEmail() {
+  const month = monthKeyFromInput();
+  const invoices = getInvoices().filter(i => i.month === month && !i.paid);
+  const clients = getJSON('clients', []);
+  
+  const emails = invoices
+    .map(i => clients.find(c => c.id === i.clientId))
+    .filter(c => c && c.email)
+    .map(c => c.email.trim());
+  
+  if (!emails.length) {
+    toast('No emails found for unpaid clients');
+    return;
+  }
+
+  navigator.clipboard.writeText(emails.join(', ')).then(() => {
+    toast(`Copied ${emails.length} email(s)`, 'done');
+  }).catch(() => {
+    toast('Copy failed – please copy manually', 'skip');
+  });
+  closeBulkPanel();
+}
+
+function wipeAllData() {
+  if (!confirm('This will DELETE ALL data (clients, invoices, settings, PIN). Cannot be undone. Continue?')) return;
+  
+  localStorage.clear();
+  const req = indexedDB.deleteDatabase('freeman-images');
+  req.onsuccess = () => {
+    toast('All data wiped. Refreshing...', 'done');
+    setTimeout(() => location.reload(), 1200);
+  };
+  req.onerror = () => {
+    toast('Some data may remain – try clearing site data in browser settings');
+  };
+}
+
+async function exportAllData() {
+  const data = {
+    version: APP_VERSION,
+    timestamp: new Date().toISOString(),
+    clients: getJSON('clients', []),
+    invoices: getInvoices(),
+    automationSettings: getAutomationSettings(),
+    businessProfile: getBusinessProfile(),
+    orders: {}
+  };
+
+  const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  days.forEach(day => {
+    const key = `order_${day}`;
+    data.orders[key] = getJSON(key, []);
+  });
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `freeman-lawn-backup-${data.timestamp.slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup downloaded', 'done');
+}
+
+/******************************
+ * Fixed renderInvoices
+ ******************************/
 function renderInvoices() {
-  // Your original renderInvoices code here
-  // Example placeholder
-  document.getElementById('invoiceList').innerHTML = '<p>Loading invoices...</p>';
+  autoMarkOverdueIfNeeded();
+
+  const month = monthKeyFromInput();
+  const invoices = getInvoices().filter(i => i.month === month);
+  const clients = getJSON('clients', []);
+  const list = document.getElementById('invoiceList');
+  list.innerHTML = '';
+
+  if (!invoices.length) {
+    list.innerHTML = '<p style="text-align:center;color:#777;">No invoices for this month yet.<br>Generate or wait for auto-generation.</p>';
+    document.getElementById('invoiceTotals').textContent = '';
+    return;
+  }
+
+  let totalDue = 0, totalPaid = 0, totalOverdue = 0;
+
+  invoices.forEach(inv => {
+    const c = clients.find(x => x.id === inv.clientId) || {name:'[Deleted]'};
+    const row = document.createElement('div');
+    row.className = 'day-card';
+    row.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <strong>${c.name}</strong>
+        <span style="font-weight:bold;color:${inv.status==='Paid'?'#2e7d32':inv.status==='Overdue'?'#d32f2f':'#f57c00'}"> \]{inv.rate} – ${inv.status}
+        </span>
+      </div>
+      <small>Created: ${new Date(inv.createdAt).toLocaleDateString()}</small>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+        \( {inv.paid ? '' : `<button class="btn btn-primary" onclick="markPaid(' \){inv.id}')">Mark Paid</button>`}
+        \( {inv.status !== 'Overdue' && !inv.paid ? `<button class="btn btn-secondary" onclick="markOverdue(' \){inv.id}')">Mark Overdue</button>` : ''}
+        <button class="btn btn-danger" onclick="deleteInvoice('${inv.id}')">Delete</button>
+      </div>
+    `;
+    list.appendChild(row);
+
+    if (inv.paid) totalPaid += inv.rate;
+    else if (inv.status === 'Overdue') totalOverdue += inv.rate;
+    else totalDue += inv.rate;
+  });
+
+  document.getElementById('invoiceTotals').innerHTML = `
+    Total Due: \[ {totalDue} &nbsp;|&nbsp; 
+    Overdue: <span style="color:#d32f2f"> \]{totalOverdue}</span> &nbsp;|&nbsp; 
+    Paid: <span style="color:#2e7d32">$${totalPaid}</span>
+  `;
 }
