@@ -138,109 +138,109 @@
   </section>
 
   <!-- Settings -->
-<section id="settingsView" class="page">
-  <h1>Settings</h1>
+  <section id="settingsView" class="page">
+    <h1>Settings</h1>
 
-  <div class="day-card">
-    <h2>Data Backup</h2>
-    <p class="subtle">Export everything into one JSON, or import from a backup.</p>
-    <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
-      <button class="btn btn-primary" onclick="exportAllData()">⬇️ Export All</button>
-      <input id="importAllFile" type="file" accept=".json" style="display:none;">
-      <button class="btn btn-secondary" onclick="document.getElementById('importAllFile').click()">⬆️ Import All</button>
+    <div class="day-card">
+      <h2>Data Backup</h2>
+      <p class="subtle">Export everything into one JSON, or import from a backup.</p>
+      <div style="display:flex; gap:8px; margin-bottom:8px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="exportAllData()">⬇️ Export All</button>
+        <input id="importAllFile" type="file" accept=".json" style="display:none;">
+        <button class="btn btn-secondary" onclick="document.getElementById('importAllFile').click()">⬆️ Import All</button>
+      </div>
+      <p style="font-size:.9rem; color:#555;">Exports clients, invoices, route orders (order_Monday…), and automation settings into one JSON.</p>
     </div>
-    <p style="font-size:.9rem; color:#555;">Exports clients, invoices, route orders (order_Monday…), and automation settings into one JSON.</p>
-  </div>
 
-  <div class="day-card">
-    <h2>Business Profile</h2>
-    <p class="subtle">Used on invoices and messages. Keep this up to date.</p>
-    <div class="grid-2">
-      <input id="bp_name" class="input" placeholder="Business name">
-      <input id="bp_owner" class="input" placeholder="Owner">
-      <textarea id="bp_address" class="input" placeholder="Address"></textarea>
-      <input id="bp_email" class="input" placeholder="Email">
-      <input id="bp_phone" class="input" placeholder="Phone">
-
+    <div class="day-card">
+      <h2>Business Profile</h2>
+      <p class="subtle">Used on invoices and messages. Keep this up to date.</p>
       <div class="grid-2">
-        <input id="bp_venmo" class="input" placeholder="Venmo (e.g. @FreemanLawnFL)">
-        <input id="bp_cashapp" class="input" placeholder="Cash App (e.g. $FreemanLawnFL)">
+        <input id="bp_name" class="input" placeholder="Business name">
+        <input id="bp_owner" class="input" placeholder="Owner">
+        <textarea id="bp_address" class="input" placeholder="Address"></textarea>
+        <input id="bp_email" class="input" placeholder="Email">
+        <input id="bp_phone" class="input" placeholder="Phone">
+
+        <div class="grid-2">
+          <input id="bp_venmo" class="input" placeholder="Venmo (e.g. @FreemanLawnFL)">
+          <input id="bp_cashapp" class="input" placeholder="Cash App (e.g. $FreemanLawnFL)">
+        </div>
+
+        <div class="grid-3">
+          <input id="bp_zelle_name" class="input" placeholder="Zelle name">
+          <input id="bp_zelle_phone" class="input" placeholder="Zelle phone">
+          <input id="bp_zelle_email" class="input" placeholder="Zelle email">
+        </div>
+
+        <button class="btn btn-primary" onclick="saveBusinessProfile()">💾 Save Business Profile</button>
       </div>
-
-      <div class="grid-3">
-        <input id="bp_zelle_name" class="input" placeholder="Zelle name">
-        <input id="bp_zelle_phone" class="input" placeholder="Zelle phone">
-        <input id="bp_zelle_email" class="input" placeholder="Zelle email">
-      </div>
-
-      <button class="btn btn-primary" onclick="saveBusinessProfile()">💾 Save Business Profile</button>
-    </div>
-  </div>
-
-  <div class="day-card">
-    <h2>Invoicing Automation</h2>
-    <p class="subtle">Set it and forget it — invoices create automatically and can be marked overdue.</p>
-    <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-      <label class="switch" title="Enable automatic monthly invoice generation">
-        <input type="checkbox" id="autoInvoiceToggle">
-        <span class="slider"></span>
-      </label>
-      <span>Enable auto-generate</span>
-
-      <div>
-        <label for="autogenDay" style="font-weight:600;">Day of month</label><br/>
-        <select id="autogenDay" class="input" style="width:120px; margin:6px 0 0;"></select>
-      </div>
-
-      <button class="btn btn-primary" onclick="runMonthlyAutogenNow()">⚡ Run this month now</button>
     </div>
 
-    <hr style="border:none; border-top:1px solid #eee; margin:12px 0;">
+    <div class="day-card">
+      <h2>Invoicing Automation</h2>
+      <p class="subtle">Set it and forget it — invoices create automatically and can be marked overdue.</p>
+      <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+        <label class="switch" title="Enable automatic monthly invoice generation">
+          <input type="checkbox" id="autoInvoiceToggle">
+          <span class="slider"></span>
+        </label>
+        <span>Enable auto-generate</span>
 
-    <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
-      <label class="switch" title="Automatically mark invoices as Overdue after N days">
-        <input type="checkbox" id="autoOverdueToggle">
-        <span class="slider"></span>
-      </label>
-      <span>Auto-mark Overdue</span>
+        <div>
+          <label for="autogenDay" style="font-weight:600;">Day of month</label><br/>
+          <select id="autogenDay" class="input" style="width:120px; margin:6px 0 0;"></select>
+        </div>
 
-      <div>
-        <label for="overdueDays" style="font-weight:600;">Days after creation</label><br/>
-        <input id="overdueDays" type="number" min="1" max="60" step="1" class="input" style="width:110px; margin-top:6px;">
+        <button class="btn btn-primary" onclick="runMonthlyAutogenNow()">⚡ Run this month now</button>
       </div>
 
-      <button class="btn btn-secondary" onclick="runOverdueCheckNow()">⏱ Run overdue check now</button>
+      <hr style="border:none; border-top:1px solid #eee; margin:12px 0;">
+
+      <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+        <label class="switch" title="Automatically mark invoices as Overdue after N days">
+          <input type="checkbox" id="autoOverdueToggle">
+          <span class="slider"></span>
+        </label>
+        <span>Auto-mark Overdue</span>
+
+        <div>
+          <label for="overdueDays" style="font-weight:600;">Days after creation</label><br/>
+          <input id="overdueDays" type="number" min="1" max="60" step="1" class="input" style="width:110px; margin-top:6px;">
+        </div>
+
+        <button class="btn btn-secondary" onclick="runOverdueCheckNow()">⏱ Run overdue check now</button>
+      </div>
+
+      <p id="autoSummary" class="hint"></p>
     </div>
 
-    <p id="autoSummary" class="hint"></p>
-  </div>
-
-  <div class="day-card">
-    <h2>Security</h2>
-    <p class="subtle">Protect your data with a 4-digit PIN.</p>
-    <div style="display:flex; gap:8px; flex-wrap:wrap;">
-      <button class="btn btn-secondary" onclick="changePin()">🔒 Change PIN</button>
-      <button class="btn btn-secondary" onclick="removePin()">🔓 Remove PIN</button>
+    <div class="day-card">
+      <h2>Security</h2>
+      <p class="subtle">Protect your data with a 4-digit PIN.</p>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="changePin()">🔒 Change PIN</button>
+        <button class="btn btn-secondary" onclick="removePin()">🔓 Remove PIN</button>
+      </div>
     </div>
-  </div>
 
-  <div class="day-card danger">
-    <h2>Danger Zone</h2>
-    <p class="subtle">This clears ALL local data (clients, invoices, routes, settings, PIN).</p>
-    <button class="btn btn-danger" onclick="wipeAllData()">🗑 Reset All Data</button>
-  </div>
+    <div class="day-card danger">
+      <h2>Danger Zone</h2>
+      <p class="subtle">This clears ALL local data (clients, invoices, routes, settings, PIN).</p>
+      <button class="btn btn-danger" onclick="wipeAllData()">🗑 Reset All Data</button>
+    </div>
 
-  <!-- Added Install App button here -->
-  <div class="day-card">
-    <h2>Install the App</h2>
-    <p class="subtle">Add Freeman Lawn to your home screen for full app experience (offline support, no browser bar).</p>
-    <button id="installBtn" class="btn btn-primary" style="display:none; width:100%; margin-top:8px;">
-      Install App
-    </button>
-  </div>
+    <!-- Added Install App button here -->
+    <div class="day-card">
+      <h2>Install the App</h2>
+      <p class="subtle">Add Freeman Lawn to your home screen for full app experience (offline support, no browser bar).</p>
+      <button id="installBtn" class="btn btn-primary" style="display:none; width:100%; margin-top:8px;">
+        Install App
+      </button>
+    </div>
 
-  <p id="aboutMeta" style="margin-top:12px; font-size:.9rem; color:#555;"></p>
-</section>
+    <p id="aboutMeta" style="margin-top:12px; font-size:.9rem; color:#555;"></p>
+  </section>
 
   <!-- Bottom Navigation -->
   <nav class="bottom-nav" id="bottomNav" style="display:none;">
