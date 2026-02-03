@@ -2,7 +2,7 @@
   "name": "Freeman Lawn Services",
   "short_name": "Freeman Lawn",
   "description": "Lawn care client management, scheduling & invoicing",
-  "start_url": ".",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#f8faf8",
   "theme_color": "#2e7d32",
